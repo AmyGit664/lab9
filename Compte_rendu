@@ -1,0 +1,125 @@
+**************************************************************************************************************************
+********************************* lab9: Création et utilisation des bibliothèques dynamiques *****************************
+**************************************************************************************************************************
+
+******************************************
+************ 1ère question ***************
+******************************************
+
+Nous disposons de trois fichiers sources "max.c", "min.c" et "var.c" et des fichiers headers associés (fichiers.h). Ils
+sont utilisés pour la création et l'utilisation des bibliothèques dynamiques.
+
+******************************************
+************ 2ème question ***************
+******************************************
+
+Ces fichiers sont compilés avec l'option -fPIC sans faire d'édition de lien. La commande utilisée est:
+"gcc -fPIC -c max.c min.c var.c". Après compilation, les trois fichiers.o sont générés.
+
+******************************************
+************ 3ème question ***************
+******************************************
+
+Pour créer une bibliothèque dynamique, il faudra contrairement à celle statique faire appel à la commande gcc avec l'option
+-shared comme ceci: "gcc -shared -o libtools.so max.o min.o var.o" avec "libtools" le nom de la bibliothèque dynamique.
+
+******************************************
+************ 4ème question ***************
+******************************************
+
+Ensuite, cette bibliothèque est ensuite déplacée dans le répertoire lib créé lors de la partie 8. Ce répertoire contiendra 
+désormais les deux bibliothèques créées: statique et dynamique. Pour se faire, il faut écrire: "sudo mv libtools.so /opt/lib".
+
+**************************************************
+************** 5ème/6ème questions ***************
+**************************************************
+
+Après compilation du main.c en faisant "gcc test_global.c -L/opt/lib -I/opt/include -ltools -o test_global", on remarque qu'il ne
+se passe rien dans la console du débogueur. Rien ne s'affiche.
+
+******************************************
+************ 7ème question ***************
+******************************************
+ 
+En effet, l'éditeur de lien dynamique n'arrive pas à réperer le répertoire qui contient la bibliothèque partagée. Pour cela, la
+variable d'environnement "LD_LIBRARY_PATH" permettra de remédier au problème. En faisant un "echo $LD_LIBRARY_PATH", on remarque
+qu'elle est vide, elle ne contient aucune valeur. 
+
+************************************************
+************ 8ème/9eme questions ***************
+************************************************
+
+Il faut ajouter le chemin de la bibliothèque créée à cette variable que l'éditeur de lien dynamique puisse faire son travail:
+"export LD_LIBRARY_PATH={LD_LIBRARY_PATH:/opt/lib".
+
+Une fois qu'on a affecté le chemin à la variable, on constate qu'après compilation du main et exécution du binaire "test_global", le
+programme marche à merveille. Par contre, une fois qu'on quitte le terminal et qu'on relance le script, la variable est à nouveau vide
+car le chemin n'est pas rajouté de manière permanente dans la variable.
+
+********************************************
+************ 10ème question ****************
+********************************************
+
+POur régler ce problème, il suffit d'ouvrir le fichier bashrc, y ajouter "export LD_LIBRARY_PATH={LD_LIBRARY_PATH:/opt/lib" en fin de
+ligne. Ensuite, on exécute ce fichier en tapant depuis le terminal "source .bashrc", on quitte le terminal, on le relance et on voit
+bien que la variable d'environnement contient toujours ce chemin et on peut exécuter de manière aisée le binaire. 
+
+**************************************************
+************ 11ème/12eme questions ***************
+**************************************************
+
+POur savoir exactement où se trouve la bibliothèque math "libm.so", il faut faire "locate libm.so". Elle se trouve dans le répertoire
+/usr/lib/x86_64-linux-gnu.
+
+Pour identifier le soname qui contient le numéro de la version de la bibliothèque math, il faut se placer dans le répertoire trouvé et
+taper "ls -lrt", on voit un lien symbolique qui est le soname (libm.so.6) et qui pointe vers le nom réel de la bibliothèque
+(libm-2.31.so).
+
+********************************************
+************ 13ème question ****************
+********************************************
+
+Si on souhaite que tout le monde puisse avoir accès à la bibliothèque partagée mais en mode lecture seule, il faut copier cette bibliothèque dans /usr/lib => "sudo cp /opt/lib/libtools.so /usr/lib" ensuite faire "sudo chmod o-w libtools.so". On peut vérifier
+les droits d'accès en faisant "ls -lrt libtools.so". Seulement "r" doit apparaître pour les autres utilisateurs. 
+
+********************************************
+************ 14ème question ****************
+********************************************
+
+la commande "ldconfig" met à jour l'éditeur de lien dynamique (le chargeur) "ld.so" qui va utiliser le cache des bibliothèques
+=> "ldconfig -pC ld.so". Ainsi la bibliothèque partagée est prête à l'emploi.
+
+********************************************
+************ 15ème question ****************
+********************************************
+
+Après avoir appliqué l'option -p de ldconfig et la commande grep ("ldconfig -p | grep libtools.so"), on obtient ça comme résultat:
+libtools.so (libc6,x86-64) => /lib/libtools.so.
+
+************************************************
+************ 16/17ème questions ****************
+************************************************
+
+Pour vérifier l'existence de la bibliothèque dans /usr/lib, on utilise la commande ldd ("ldd libtools.so").
+
+Comme l'éditeur de lien dynamique est mis à jour, c'est à dire qu'il peut accéder facilement à la bibliothèque partagée, on peut
+désactiver la variable d'environnement LD_LIBRARY_PATH en faisant "unset LD_LIBRARY_PATH" et on vérifie qu'elle est bien vide avec la
+commande "echo".
+
+************************************************
+************ 18/19ème questions ****************
+************************************************
+
+Cette fois-ci pour compiler, on n'a plus besoin de spécifier le chemin de la bibliothèque comme au début, il faut juste taper
+"gcc test_global.c -ltools -o test_global".
+
+Le binaire est ainsi créé. Après exécution par "./test_global", le programme fonctionne bien sans erreur.
+
+
+
+
+
+
+
+
+
